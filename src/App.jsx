@@ -142,13 +142,45 @@ export default function App() {
   const [category, setCategory]   = useState('all')
   const [toast, setToast]         = useState(null)
   const [flashIdx, setFlashIdx]   = useState(null)
+  const [installPrompt, setInstallPrompt] = useState(null)
+
+  // PWA install prompt
+  useEffect(() => {
+    const handler = (e) => { e.preventDefault(); setInstallPrompt(e) }
+    window.addEventListener('beforeinstallprompt', handler)
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
+  const handleInstall = useCallback(async () => {
+    if (!installPrompt) return
+    installPrompt.prompt()
+    const { outcome } = await installPrompt.userChoice
+    if (outcome === 'accepted') setInstallPrompt(null)
+  }, [installPrompt])
+
+  const poemSeen = useRef(false)
+  try { poemSeen.current = localStorage.getItem('poem_seen') === '1' } catch {}
+
   const [showPoem, setShowPoem]   = useState(false)
 
   const toastTimer  = useRef(null)
   const flashTimer  = useRef(null)
   const searchRef   = useRef(null)
 
-  const { displayed: poemText, done: poemDone } = useTypewriter(POEM, showPoem)
+  // If already seen → skip typewriter, show full text immediately
+  const { displayed: poemText, done: poemDone } = useTypewriter(
+    POEM, showPoem && !poemSeen.current
+  )
+  const finalPoemText = poemSeen.current && showPoem ? POEM : poemText
+  const finalPoemDone = poemSeen.current && showPoem ? true : poemDone
+
+  // Persist once typewriter finishes
+  useEffect(() => {
+    if (poemDone && !poemSeen.current) {
+      poemSeen.current = true
+      try { localStorage.setItem('poem_seen', '1') } catch {}
+    }
+  }, [poemDone])
 
   // Category counts
   const catCounts = useMemo(() => {
@@ -222,9 +254,14 @@ export default function App() {
           <span className="titlebar-badge">
             [{filtered.length}/{emojis.length}]
           </span>
+          {installPrompt && (
+            <button className="notif-btn" onClick={handleInstall} aria-label="Install" title="Install app">
+              <span className="floppy" aria-hidden="true" />
+            </button>
+          )}
           <button className="notif-btn" onClick={() => setShowPoem(true)} aria-label="Message">
             <span className="notif-icon">✉</span>
-            <span className="notif-dot" />
+            {!poemSeen.current && <span className="notif-dot" />}
           </button>
         </div>
 
@@ -336,10 +373,10 @@ export default function App() {
             </div>
             <div className="poem-body">
               <p className="poem-text">
-                {poemText}
-                {!poemDone && <span className="poem-cursor">█</span>}
+                {finalPoemText}
+                {!finalPoemDone && <span className="poem-cursor">█</span>}
               </p>
-              {poemDone && <AsciiBoat />}
+              {finalPoemDone && <AsciiBoat />}
             </div>
           </div>
         </div>
