@@ -63,8 +63,8 @@ function Dots({ size }) {
   )
 }
 
-// ── Typewriter hook ──────────────────────────────────────────────────
-function useTypewriter(text, active, speed = 38) {
+// ── Typewriter hook (human-like rhythm) ─────────────────────────────
+function useTypewriter(text, active) {
   const [displayed, setDisplayed] = useState('')
   const [done, setDone] = useState(false)
 
@@ -75,18 +75,33 @@ function useTypewriter(text, active, speed = 38) {
       return
     }
     let i = 0
+    let cancelled = false
     setDisplayed('')
     setDone(false)
-    const iv = setInterval(() => {
+
+    function nextChar() {
+      if (cancelled) return
       i++
       setDisplayed(text.slice(0, i))
-      if (i >= text.length) {
-        clearInterval(iv)
-        setDone(true)
-      }
-    }, speed)
-    return () => clearInterval(iv)
-  }, [text, active, speed])
+      if (i >= text.length) { setDone(true); return }
+
+      const ch = text[i - 1]
+      const next = text[i] || ''
+      let delay = 55 + Math.random() * 45          // base 55–100ms
+      if (ch === '.' || ch === '…') delay += 320 + Math.random() * 180  // full stop
+      else if (ch === ',') delay += 120 + Math.random() * 80            // comma
+      else if (ch === '\n') delay += 400 + Math.random() * 200          // new line
+      else if (ch === '—') delay += 200 + Math.random() * 100           // dash
+      else if (ch === ' ' && next === next.toUpperCase() && next !== next.toLowerCase())
+        delay += 60 + Math.random() * 40            // before capital
+      else if (Math.random() < 0.07) delay += 140   // occasional hesitation
+
+      setTimeout(nextChar, delay)
+    }
+
+    const start = setTimeout(nextChar, 600) // initial pause
+    return () => { cancelled = true; clearTimeout(start) }
+  }, [text, active])
 
   return { displayed, done }
 }
