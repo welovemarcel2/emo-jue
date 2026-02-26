@@ -41,15 +41,34 @@ async function copyToClipboard(text) {
   }
 }
 
-// ── Poem (easter egg) ────────────────────────────────────────────────
-const POEM = `Le petit explorateur que je suis échangerait toutes les aventures sur terre.
+// ── Messages (retro mailbox) ─────────────────────────────────────────
+const MESSAGES = [
+  {
+    id: 2,
+    from: 'Marcel',
+    subject: 'Bonjour !',
+    date: '26/02/26',
+    read: false,
+    body: '',
+    showHeart: true,
+  },
+  {
+    id: 1,
+    from: 'Marcel',
+    subject: 'Un mot d\'aventure',
+    date: '25/02/26',
+    read: false,
+    body: `Le petit explorateur que je suis échangerait toutes les aventures sur terre.
 Pour sentir ton parfum porté par de douces alizés.
 Pour contempler tes lèvres me murmurer tes plus belles découvertes.
 Pour parcourir ta peau et en faire la cartographie.
 J'aime cette boule au ventre avant chaque grand voyage.
 En regardant droit vers l'horizon, il m'apparaît que le prochain, porte ton nom.
 
-— Marcel, ton explorateur en pixels`
+— Marcel, ton explorateur en pixels`,
+    showBoat: true,
+  },
+]
 
 // ── Dots component (traffic lights) ──────────────────────────────────
 function Dots({ size }) {
@@ -106,6 +125,118 @@ function useTypewriter(text, active) {
   return { displayed, done }
 }
 
+// ── ASCII Heart animation (beating with moving stars) ────────────────
+// Helper: pad each line to W chars for perfect alignment
+const W = 52
+const pad = s => s.padEnd(W)
+const BORDER_TOP = '^'.repeat(W)
+const BORDER_BOT = '()'.repeat(W / 2)
+
+const HEART_1 = [
+  BORDER_TOP,
+  '< :::::::::::::::::::::::::::::::::::::::::::::::: >',
+  '< ::::::::         ::::::::         :::::::::::::: >',
+  '< ::::::   ****     ::::::::    ****    ::::::::::: >',
+  '< :::::  ****        ::::::      ****   :::::::::: >',
+  '< ::::  ****                      ****   ::::::::: >',
+  '< :::  ****                        ****  ::::::::: >',
+  '< :::  ****                        ****  ::::::::: >',
+  '< ::::  ****                      ****   ::::::::: >',
+  '< :::::  ****                    ****   :::::::::: >',
+  '< ::::::  ****                  ****   ::::::::::: >',
+  '< :::::::  ****                ****   :::::::::::: >',
+  '< ::::::::   ****            ****   :::::::::::::: >',
+  '< ::::::::::   ****        ****   :::::::::::::::: >',
+  '< ::::::::::::   ****    ****   :::::::::::::::::: >',
+  '< ::::::::::::::   ********   :::::::::::::::::::: >',
+  '< ::::::::::::::::   ****   :::::::::::::::::::::: >',
+  '< ::::::::::::::::::  **  ::::::::::::::::::::::::  >',
+  '< :::::::::::::::::::::::::::::::::::::::::::::::: >',
+  BORDER_BOT,
+].map(pad).join('\n')
+
+const HEART_2 = [
+  BORDER_TOP,
+  '< :::::::::::::::::::::::::::::::::::::::::::::::: >',
+  '< :::::::          ::::::::          ::::::::::::: >',
+  '< ::::   ****       ::::::::      ****   ::::::::: >',
+  '< :::  ****           ::::::        ****  :::::::: >',
+  '< ::  ****                           **** :::::::: >',
+  '< ::  ****                            ****:::::::: >',
+  '< ::  ****                            ****:::::::: >',
+  '< ::  ****                           **** :::::::: >',
+  '< :::  ****                         ****  :::::::: >',
+  '< ::::  ****                       ****  ::::::::: >',
+  '< :::::  ****                     ****  :::::::::: >',
+  '< ::::::   ****                 ****  :::::::::::: >',
+  '< ::::::::   ****             ****  :::::::::::::: >',
+  '< ::::::::::   ****         ****  :::::::::::::::: >',
+  '< ::::::::::::   *********   ::::::::::::::::::::: >',
+  '< ::::::::::::::   *****   ::::::::::::::::::::::: >',
+  '< ::::::::::::::::  ***  ::::::::::::::::::::::::::  >',
+  '< :::::::::::::::::::::::::::::::::::::::::::::::: >',
+  BORDER_BOT,
+].map(pad).join('\n')
+
+// Heartbeat timing: lub (expand) - dub (expand) - pause
+const BEAT_SEQUENCE = [
+  { frame: 0, dur: 600 },  // resting
+  { frame: 1, dur: 150 },  // lub (expand)
+  { frame: 0, dur: 200 },  // back
+  { frame: 1, dur: 150 },  // dub (expand)
+  { frame: 0, dur: 800 },  // long rest
+]
+
+function AsciiHeart() {
+  const lines1 = HEART_1.split('\n')
+  const totalLines = lines1.length
+  const [revealed, setRevealed] = useState(0)
+  const [loaded, setLoaded] = useState(false)
+  const [step, setStep] = useState(0)
+
+  // Phase 1: line-by-line CRT loading
+  useEffect(() => {
+    if (loaded) return
+    if (revealed >= totalLines) {
+      // small pause before heartbeat starts
+      const t = setTimeout(() => setLoaded(true), 400)
+      return () => clearTimeout(t)
+    }
+    const delay = revealed === 0 ? 300 : 60 + Math.random() * 50 // 60-110ms per line
+    const t = setTimeout(() => setRevealed(r => r + 1), delay)
+    return () => clearTimeout(t)
+  }, [revealed, loaded, totalLines])
+
+  // Phase 2: heartbeat animation
+  useEffect(() => {
+    if (!loaded) return
+    const beat = BEAT_SEQUENCE[step]
+    const t = setTimeout(() => {
+      setStep(s => (s + 1) % BEAT_SEQUENCE.length)
+    }, beat.dur)
+    return () => clearTimeout(t)
+  }, [step, loaded])
+
+  if (!loaded) {
+    // Build loading display: revealed lines + blank lines for the rest
+    const visibleLines = lines1.slice(0, revealed)
+    const blankLines = Array(totalLines - revealed).fill(' '.repeat(W))
+    const display = [...visibleLines, ...blankLines].join('\n')
+    return (
+      <div className="heart-anim" aria-hidden="true">
+        <pre className="heart-frame heart-loading">{display}</pre>
+      </div>
+    )
+  }
+
+  const heart = BEAT_SEQUENCE[step].frame === 0 ? HEART_1 : HEART_2
+  return (
+    <div className="heart-anim" aria-hidden="true">
+      <pre className="heart-frame">{heart}</pre>
+    </div>
+  )
+}
+
 // ── ASCII Boat animation ─────────────────────────────────────────────
 const WAVE_FRAMES = [
   ['     ⛵        ', '~∽~∽~∽~∽~∽~∽~∽~'],
@@ -143,44 +274,59 @@ export default function App() {
   const [toast, setToast]         = useState(null)
   const [flashIdx, setFlashIdx]   = useState(null)
   const [installPrompt, setInstallPrompt] = useState(null)
+  const [showInstallTip, setShowInstallTip] = useState(false)
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true
 
-  // PWA install prompt
+  // PWA install prompt (Android Chrome)
   useEffect(() => {
     const handler = (e) => { e.preventDefault(); setInstallPrompt(e) }
     window.addEventListener('beforeinstallprompt', handler)
     return () => window.removeEventListener('beforeinstallprompt', handler)
   }, [])
 
+  const installTipTimer = useRef(null)
   const handleInstall = useCallback(async () => {
-    if (!installPrompt) return
-    installPrompt.prompt()
-    const { outcome } = await installPrompt.userChoice
-    if (outcome === 'accepted') setInstallPrompt(null)
+    if (installPrompt) {
+      installPrompt.prompt()
+      const { outcome } = await installPrompt.userChoice
+      if (outcome === 'accepted') setInstallPrompt(null)
+    } else {
+      // iOS / fallback — show tip
+      clearTimeout(installTipTimer.current)
+      setShowInstallTip(true)
+      installTipTimer.current = setTimeout(() => setShowInstallTip(false), 5000)
+    }
   }, [installPrompt])
 
-  const poemSeen = useRef(false)
-  try { poemSeen.current = localStorage.getItem('poem_seen') === '1' } catch {}
+  // ── Mailbox state ──
+  const [showMailbox, setShowMailbox] = useState(false)
+  const [openMsgId, setOpenMsgId]     = useState(null)
+  const [readIds, setReadIds]         = useState(() => {
+    try { return JSON.parse(localStorage.getItem('mail_read') || '[]') } catch { return [] }
+  })
 
-  const [showPoem, setShowPoem]   = useState(false)
+  const openMsg = MESSAGES.find(m => m.id === openMsgId)
+  const alreadyRead = openMsg ? readIds.includes(openMsg.id) : false
+  const unreadCount = MESSAGES.filter(m => !readIds.includes(m.id)).length
+
+  // Typewriter for currently open message
+  const { displayed: msgText, done: msgDone } = useTypewriter(
+    openMsg?.body || '', openMsgId !== null && !alreadyRead
+  )
+
+  // Mark as read once typewriter finishes
+  useEffect(() => {
+    if (msgDone && openMsg && !readIds.includes(openMsg.id)) {
+      const next = [...readIds, openMsg.id]
+      setReadIds(next)
+      try { localStorage.setItem('mail_read', JSON.stringify(next)) } catch {}
+    }
+  }, [msgDone])
 
   const toastTimer  = useRef(null)
   const flashTimer  = useRef(null)
   const searchRef   = useRef(null)
-
-  // If already seen → skip typewriter, show full text immediately
-  const { displayed: poemText, done: poemDone } = useTypewriter(
-    POEM, showPoem && !poemSeen.current
-  )
-  const finalPoemText = poemSeen.current && showPoem ? POEM : poemText
-  const finalPoemDone = poemSeen.current && showPoem ? true : poemDone
-
-  // Persist once typewriter finishes
-  useEffect(() => {
-    if (poemDone && !poemSeen.current) {
-      poemSeen.current = true
-      try { localStorage.setItem('poem_seen', '1') } catch {}
-    }
-  }, [poemDone])
 
   // Category counts
   const catCounts = useMemo(() => {
@@ -254,14 +400,14 @@ export default function App() {
           <span className="titlebar-badge">
             [{filtered.length}/{emojis.length}]
           </span>
-          {installPrompt && (
+          {!isStandalone && (
             <button className="notif-btn" onClick={handleInstall} aria-label="Install" title="Install app">
               <span className="floppy" aria-hidden="true" />
             </button>
           )}
-          <button className="notif-btn" onClick={() => setShowPoem(true)} aria-label="Message">
+          <button className="notif-btn" onClick={() => { setShowMailbox(true); setOpenMsgId(null) }} aria-label="Message">
             <span className="notif-icon">✉</span>
-            {!poemSeen.current && <span className="notif-dot" />}
+            {unreadCount > 0 && <span className="notif-dot" />}
           </button>
         </div>
 
@@ -360,24 +506,95 @@ export default function App() {
         </div>
       </div>
 
-      {/* ── POEM OVERLAY (easter egg) ─────────────── */}
-      {showPoem && (
-        <div className="poem-backdrop" onClick={() => setShowPoem(false)}>
-          <div className="poem-window" onClick={e => e.stopPropagation()}>
-            <div className="poem-titlebar">
-              <div className="poem-titlebar-left">
+      {/* ── MAILBOX OVERLAY ─────────────────────────── */}
+      {showMailbox && (
+        <div className="mail-backdrop" onClick={() => { setShowMailbox(false); setOpenMsgId(null) }}>
+          <div className="mail-window" onClick={e => e.stopPropagation()}>
+
+            {/* Mail titlebar */}
+            <div className="mail-titlebar">
+              <div className="mail-titlebar-left">
                 <Dots size="sm" />
               </div>
-              <span className="poem-titlebar-text">lettre.txt</span>
-              <button className="poem-close" onClick={() => setShowPoem(false)}>✕</button>
+              <span className="mail-titlebar-text">
+                {openMsgId ? '✉ message' : '✉ boîte de réception'}
+              </span>
+              <button className="poem-close" onClick={() => { setShowMailbox(false); setOpenMsgId(null) }}>✕</button>
             </div>
-            <div className="poem-body">
-              <p className="poem-text">
-                {finalPoemText}
-                {!finalPoemDone && <span className="poem-cursor">█</span>}
-              </p>
-              {finalPoemDone && <AsciiBoat />}
-            </div>
+
+            {/* Inbox list OR message view */}
+            {openMsgId === null ? (
+              <div className="mail-inbox">
+                <div className="mail-toolbar">
+                  <span className="mail-toolbar-label">INBOX</span>
+                  <span className="mail-toolbar-count">
+                    {MESSAGES.length} msg{MESSAGES.length > 1 ? 's' : ''}
+                  </span>
+                </div>
+                <div className="mail-list">
+                  {MESSAGES.map(m => {
+                    const isRead = readIds.includes(m.id)
+                    return (
+                      <button
+                        key={m.id}
+                        className={`mail-row ${isRead ? 'mail-row--read' : ''}`}
+                        onClick={() => setOpenMsgId(m.id)}
+                      >
+                        <span className="mail-row-status">{isRead ? '◇' : '◆'}</span>
+                        <span className="mail-row-from">{m.from}</span>
+                        <span className="mail-row-subject">{m.subject}</span>
+                        <span className="mail-row-date">{m.date}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="mail-statusbar">
+                  <span>{unreadCount} non lu{unreadCount > 1 ? 's' : ''}</span>
+                  <span>▪ Emo-Jue Mail v1.0</span>
+                </div>
+              </div>
+            ) : (
+              <div className="mail-reader">
+                <div className="mail-reader-header">
+                  <button className="mail-back" onClick={() => setOpenMsgId(null)}>
+                    ← retour
+                  </button>
+                  <div className="mail-meta">
+                    <span className="mail-meta-from">De : <strong>{openMsg?.from}</strong></span>
+                    <span className="mail-meta-subject">Objet : {openMsg?.subject}</span>
+                    <span className="mail-meta-date">{openMsg?.date}</span>
+                  </div>
+                </div>
+                <div className="mail-reader-body">
+                  {openMsg?.body && (
+                    <p className="poem-text">
+                      {alreadyRead ? openMsg.body : msgText}
+                      {!alreadyRead && !msgDone && <span className="poem-cursor">█</span>}
+                    </p>
+                  )}
+                  {(openMsg?.body ? (alreadyRead || msgDone) : true) && openMsg?.showBoat && <AsciiBoat />}
+                  {(openMsg?.body ? (alreadyRead || msgDone) : true) && openMsg?.showHeart && <AsciiHeart />}
+                </div>
+              </div>
+            )}
+
+          </div>
+        </div>
+      )}
+
+      {/* ── INSTALL TIP (iOS / fallback) ──────────── */}
+      {showInstallTip && (
+        <div className="install-tip" onClick={() => setShowInstallTip(false)}>
+          <div className="install-tip-bar">
+            <Dots size="sm" />
+            <span className="toast-title">Installer</span>
+          </div>
+          <div className="install-tip-body">
+            <span className="floppy" aria-hidden="true" />
+            <p className="install-tip-text">
+              Appuie sur <strong>Partager</strong> (⎋) puis<br />
+              <strong>Sur l'écran d'accueil</strong>
+            </p>
           </div>
         </div>
       )}

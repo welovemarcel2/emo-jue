@@ -349,8 +349,8 @@ input {
   border-radius: 1px;
 }
 
-/* ── Poem Overlay ─────────────────────────────────────────────────── */
-.poem-backdrop {
+/* ── Mailbox Overlay ──────────────────────────────────────────────── */
+.mail-backdrop {
   position: fixed;
   inset: 0;
   background: rgba(60, 45, 30, 0.35);
@@ -358,7 +358,7 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 16px;
   animation: backdrop-in 0.2s ease forwards;
 }
 
@@ -367,29 +367,24 @@ input {
   to   { opacity: 1; }
 }
 
-.poem-window {
+.mail-window {
   background: var(--win);
   border: 2.5px solid var(--win-border);
   border-radius: 8px;
   box-shadow: 8px 8px 0 var(--win-shadow);
   overflow: hidden;
-  max-width: 480px;
+  max-width: 500px;
   width: 100%;
-  animation: poem-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: mail-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-@keyframes poem-pop {
-  0% {
-    opacity: 0;
-    transform: scale(0.85) translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+@keyframes mail-pop {
+  0%   { opacity: 0; transform: scale(0.85) translateY(20px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-.poem-titlebar {
+/* ── Titlebar ──── */
+.mail-titlebar {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -398,18 +393,15 @@ input {
   border-bottom: 2.5px solid var(--win-border);
 }
 
-.poem-titlebar-left {
+.mail-titlebar-left {
   display: flex;
   align-items: center;
   gap: 5px;
 }
 
-.poem-titlebar .dot {
-  width: 11px;
-  height: 11px;
-}
+.mail-titlebar .dot { width: 11px; height: 11px; }
 
-.poem-titlebar-text {
+.mail-titlebar-text {
   font-family: 'VT323', monospace;
   font-size: 0.95rem;
   color: var(--ink);
@@ -432,22 +424,160 @@ input {
   box-shadow: 1px 1px 0 var(--win-shadow);
   transition: background 0.08s;
 }
+.poem-close:hover { background: var(--dot-close); color: #fff; }
+.poem-close:active { box-shadow: none; transform: translate(1px, 1px); }
 
-.poem-close:hover {
-  background: var(--dot-close);
-  color: #fff;
+/* ── Inbox toolbar ──── */
+.mail-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px;
+  background: var(--win-dark);
+  border-bottom: 2px solid var(--win-border);
 }
 
-.poem-close:active {
-  box-shadow: none;
-  transform: translate(1px, 1px);
+.mail-toolbar-label {
+  font-family: 'VT323', monospace;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  color: var(--ink);
 }
 
-.poem-body {
-  padding: 24px 20px 32px;
-  min-height: 180px;
+.mail-toolbar-count {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--ink-mid);
 }
 
+/* ── Mail list ──── */
+.mail-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.mail-row {
+  display: grid;
+  grid-template-columns: 20px 1fr 1.2fr auto;
+  gap: 6px;
+  align-items: center;
+  padding: 10px 14px;
+  border: none;
+  border-bottom: 1.5px solid var(--win-dark);
+  background: var(--win-light);
+  text-align: left;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.08s;
+}
+
+.mail-row:last-child { border-bottom: none; }
+
+.mail-row:hover {
+  background: var(--win);
+  box-shadow: inset 3px 0 0 var(--tb);
+}
+
+.mail-row--read {
+  background: var(--win);
+  color: var(--ink-mid);
+}
+.mail-row--read .mail-row-from,
+.mail-row--read .mail-row-subject {
+  font-weight: 400;
+}
+
+.mail-row-status {
+  font-size: 0.55rem;
+  color: var(--tb);
+  text-align: center;
+}
+.mail-row--read .mail-row-status { color: var(--win-border-light); }
+
+.mail-row-from {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mail-row-subject {
+  font-weight: 500;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--ink-mid);
+}
+
+.mail-row-date {
+  font-size: 0.6rem;
+  color: var(--ink-light);
+  white-space: nowrap;
+  text-align: right;
+}
+
+/* ── Mail statusbar ──── */
+.mail-statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 14px;
+  background: var(--win-dark);
+  border-top: 2px solid var(--win-border);
+  font-family: 'VT323', monospace;
+  font-size: 0.75rem;
+  color: var(--ink-mid);
+  letter-spacing: 0.5px;
+}
+
+/* ── Mail reader (opened message) ──── */
+.mail-reader-header {
+  padding: 0;
+  border-bottom: 2px solid var(--win-border);
+}
+
+.mail-back {
+  display: block;
+  width: 100%;
+  padding: 7px 14px;
+  border: none;
+  border-bottom: 1.5px solid var(--win-dark);
+  background: var(--win-dark);
+  font-family: 'VT323', monospace;
+  font-size: 0.85rem;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: background 0.08s;
+}
+.mail-back:hover { background: var(--win-border-light); color: #fff; }
+
+.mail-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--ink-mid);
+  line-height: 1.5;
+}
+
+.mail-meta-from { color: var(--ink); }
+.mail-meta-date { font-size: 0.6rem; color: var(--ink-light); }
+
+.mail-reader-body {
+  padding: 20px 18px 28px;
+  min-height: 160px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+/* ── Message text (typewriter) ──── */
 .poem-text {
   font-family: 'VT323', monospace;
   font-size: 1.15rem;
@@ -494,6 +624,29 @@ input {
   color: var(--ink-mid);
   white-space: pre;
   letter-spacing: 1px;
+}
+
+/* ── ASCII Heart Animation ───────────────────────────────────────── */
+.heart-anim {
+  padding: 16px 0 8px;
+  text-align: center;
+}
+
+.heart-frame {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.45rem;
+  line-height: 1.1;
+  color: var(--dot-close);
+  white-space: pre;
+  letter-spacing: 0px;
+  margin: 0 auto;
+  display: inline-block;
+  transition: transform 0.12s ease;
+}
+
+/* Loading phase: scanline glow */
+.heart-loading {
+  text-shadow: 0 0 3px rgba(240, 104, 104, 0.5);
 }
 
 /* ── Toolbar (Search) ─────────────────────────────────────────────── */
@@ -999,6 +1152,68 @@ input {
     opacity: 1;
     transform: translateX(-50%) translateY(0) scale(1);
   }
+}
+
+/* ── Install Tip (iOS/fallback) ───────────────────────────────────── */
+.install-tip {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 900;
+  background: var(--win);
+  border: 2.5px solid var(--win-border);
+  border-radius: 8px;
+  box-shadow: 5px 5px 0 var(--win-shadow);
+  overflow: hidden;
+  max-width: min(85vw, 300px);
+  min-width: 200px;
+  animation: dialog-pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  cursor: pointer;
+}
+
+.install-tip-bar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  background: var(--tb);
+  border-bottom: 2px solid var(--win-border);
+}
+
+.install-tip-body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+}
+
+.install-tip-body .floppy {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.install-tip-body .floppy::before {
+  top: 2px;
+  left: 4px;
+  width: 12px;
+  height: 7px;
+}
+
+.install-tip-body .floppy::after {
+  bottom: 2px;
+  left: 3px;
+  width: 14px;
+  height: 7px;
+}
+
+.install-tip-text {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--ink);
+  line-height: 1.5;
+  margin: 0;
 }
 
 /* ── Scrollbar (retro chunky style) ───────────────────────────────── */
