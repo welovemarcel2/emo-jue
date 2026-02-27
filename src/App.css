@@ -590,6 +590,21 @@ input {
   font-style: italic;
 }
 
+.poem-text--ascii {
+  font-family: 'IBM Plex Mono', 'Courier New', monospace;
+  font-size: 0.38rem;
+  line-height: 1.15;
+  letter-spacing: 0;
+  white-space: pre;
+  text-align: left;
+  font-style: normal;
+  overflow-x: auto;
+  overflow-y: visible;
+  word-wrap: normal;
+  display: block;
+  padding: 4px 0;
+}
+
 .poem-cursor {
   display: inline;
   color: var(--ink);
@@ -907,12 +922,14 @@ input {
   line-height: 1.6;
   text-align: center;
   word-break: break-all;
+  white-space: normal;
   hyphens: auto;
   color: var(--ink);
   pointer-events: none;
   z-index: 1;
   max-width: 100%;
   padding: 0 2px;
+  margin: 0;
 }
 
 .card--flash .card-emoji {
@@ -938,6 +955,39 @@ input {
 .card--flash .card-hint {
   opacity: 1;
   color: var(--ink) !important;
+}
+
+/* ── Fresque Grid & Cards ─────────────────────────────────────────── */
+.grid--fresque {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card--fresque {
+  width: 100%;
+  min-height: unset;
+  align-items: flex-start;
+  padding: 14px 16px 10px;
+  border-left: 4px solid var(--c);
+  overflow: visible;
+}
+
+.card--fresque .card-hint {
+  align-self: flex-end;
+}
+
+.card-emoji--fresque {
+  font-family: 'IBM Plex Mono', 'Courier New', monospace;
+  font-size: 0.7rem;
+  line-height: 1.5;
+  white-space: pre;
+  text-align: left;
+  word-break: normal;
+  overflow-x: auto;
+  max-width: 100%;
+  padding: 0;
+  hyphens: none;
 }
 
 /* ── Empty State (looks like a dialog box) ────────────────────────── */
