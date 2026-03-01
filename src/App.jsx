@@ -299,6 +299,53 @@ function AsciiBoat() {
   )
 }
 
+// ── Swipe hook (horizontal swipe detection) ─────────────────────────
+function useSwipe(ref, { onSwipeLeft, onSwipeRight }) {
+  const touch = useRef({ x: 0, y: 0, swiping: false })
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    function onStart(e) {
+      const t = e.touches[0]
+      touch.current = { x: t.clientX, y: t.clientY, swiping: true }
+    }
+
+    function onMove(e) {
+      if (!touch.current.swiping) return
+      const dx = e.touches[0].clientX - touch.current.x
+      const dy = e.touches[0].clientY - touch.current.y
+      // If clearly vertical, cancel swipe detection
+      if (Math.abs(dy) > Math.abs(dx) * 1.2) {
+        touch.current.swiping = false
+      }
+    }
+
+    function onEnd(e) {
+      if (!touch.current.swiping) return
+      touch.current.swiping = false
+      const t = e.changedTouches[0]
+      const dx = t.clientX - touch.current.x
+      const dy = t.clientY - touch.current.y
+      // Only trigger if horizontal movement is dominant and > 60px
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        if (dx < 0) onSwipeLeft?.()
+        else onSwipeRight?.()
+      }
+    }
+
+    el.addEventListener('touchstart', onStart, { passive: true })
+    el.addEventListener('touchmove', onMove, { passive: true })
+    el.addEventListener('touchend', onEnd, { passive: true })
+    return () => {
+      el.removeEventListener('touchstart', onStart)
+      el.removeEventListener('touchmove', onMove)
+      el.removeEventListener('touchend', onEnd)
+    }
+  }, [ref, onSwipeLeft, onSwipeRight])
+}
+
 // ── Main App ─────────────────────────────────────────────────────────
 export default function App() {
   const [query, setQuery]         = useState('')
@@ -370,6 +417,9 @@ export default function App() {
   const toastTimer  = useRef(null)
   const flashTimer  = useRef(null)
   const searchRef   = useRef(null)
+  const gridRef     = useRef(null)
+  const tabsRef     = useRef(null)
+  const [swipeDir, setSwipeDir] = useState(null) // 'left' | 'right' | null
 
   // Category counts
   const catCounts = useMemo(() => {
@@ -411,6 +461,28 @@ export default function App() {
     setCategory(id)
     setQuery('')
   }, [])
+
+  // Swipe category navigation
+  const navigateCategory = useCallback((dir) => {
+    const idx = CATEGORIES.findIndex(c => c.id === category)
+    const next = dir === 'left'
+      ? (idx + 1) % CATEGORIES.length
+      : (idx - 1 + CATEGORIES.length) % CATEGORIES.length
+    setSwipeDir(dir)
+    setCategory(CATEGORIES[next].id)
+    setQuery('')
+    // Scroll the active tab into view
+    setTimeout(() => {
+      tabsRef.current?.querySelector('.tab--active')?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+    }, 50)
+    // Clear animation class after transition
+    setTimeout(() => setSwipeDir(null), 250)
+  }, [category])
+
+  const onSwipeLeft  = useCallback(() => navigateCategory('left'),  [navigateCategory])
+  const onSwipeRight = useCallback(() => navigateCategory('right'), [navigateCategory])
+
+  useSwipe(gridRef, { onSwipeLeft, onSwipeRight })
 
   // Cleanup
   useEffect(() => () => {
@@ -481,7 +553,7 @@ export default function App() {
         </div>
 
         {/* Category Tabs */}
-        <nav className="tabs" aria-label="Categories">
+        <nav className="tabs" ref={tabsRef} aria-label="Categories">
           {CATEGORIES.map(cat => (
             <button
               key={cat.id}
@@ -498,7 +570,7 @@ export default function App() {
         </nav>
 
         {/* Main Content */}
-        <main className="window-body" aria-label="Emoji grid">
+        <main className={`window-body${swipeDir ? ` swipe-${swipeDir}` : ''}`} ref={gridRef} aria-label="Emoji grid">
           {filtered.length === 0 ? (
             <div className="empty">
               <div className="empty-window">

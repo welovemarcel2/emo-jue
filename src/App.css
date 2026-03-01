@@ -832,6 +832,20 @@ input {
     linear-gradient(180deg, var(--win) 0%, var(--win-light) 100%);
 }
 
+/* ── Swipe transition ─────────────────────────────────────────────── */
+.window-body.swipe-left  > .grid { animation: slide-from-right 0.22s ease-out; }
+.window-body.swipe-right > .grid { animation: slide-from-left  0.22s ease-out; }
+
+@keyframes slide-from-right {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-from-left {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
 /* ── Emoji Grid ───────────────────────────────────────────────────── */
 .grid {
   display: grid;
