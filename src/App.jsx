@@ -303,6 +303,7 @@ function AsciiBoat() {
 export default function App() {
   const [query, setQuery]         = useState('')
   const [category, setCategory]   = useState('all')
+  const [swipeDir, setSwipeDir]   = useState(null) // 'left' | 'right' | null
   const [toast, setToast]         = useState(null)
   const [flashIdx, setFlashIdx]   = useState(null)
   const [installPrompt, setInstallPrompt] = useState(null)
@@ -406,11 +407,49 @@ export default function App() {
     toastTimer.current = setTimeout(() => setToast(null), 1800)
   }, [])
 
-  // Category switch
+  // Category switch — also scroll the active tab into view
+  const tabsRef = useRef(null)
   const handleCategory = useCallback((id) => {
     setCategory(id)
     setQuery('')
+    // Scroll the selected tab into view
+    requestAnimationFrame(() => {
+      const container = tabsRef.current
+      if (!container) return
+      const btn = container.querySelector(`[data-cat="${id}"]`)
+      if (btn) btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+    })
   }, [])
+
+  // Swipe between categories
+  const touchRef = useRef(null)
+  const handleTouchStart = useCallback((e) => {
+    const t = e.touches[0]
+    touchRef.current = { x: t.clientX, y: t.clientY, time: Date.now() }
+  }, [])
+
+  const handleTouchEnd = useCallback((e) => {
+    if (!touchRef.current) return
+    const t = e.changedTouches[0]
+    const dx = t.clientX - touchRef.current.x
+    const dy = t.clientY - touchRef.current.y
+    const dt = Date.now() - touchRef.current.time
+    touchRef.current = null
+
+    // Must be horizontal enough, fast enough, and far enough
+    if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx) * 0.7 || dt > 400) return
+
+    const currentIdx = CATEGORIES.findIndex(c => c.id === category)
+    if (dx < 0 && currentIdx < CATEGORIES.length - 1) {
+      // Swipe left → next category
+      setSwipeDir('left')
+      setTimeout(() => { handleCategory(CATEGORIES[currentIdx + 1].id); setSwipeDir(null) }, 180)
+    } else if (dx > 0 && currentIdx > 0) {
+      // Swipe right → previous category
+      setSwipeDir('right')
+      setTimeout(() => { handleCategory(CATEGORIES[currentIdx - 1].id); setSwipeDir(null) }, 180)
+    }
+  }, [category, handleCategory])
 
   // Cleanup
   useEffect(() => () => {
@@ -481,10 +520,11 @@ export default function App() {
         </div>
 
         {/* Category Tabs */}
-        <nav className="tabs" aria-label="Categories">
+        <nav className="tabs" aria-label="Categories" ref={tabsRef}>
           {CATEGORIES.map(cat => (
             <button
               key={cat.id}
+              data-cat={cat.id}
               className={`tab ${category === cat.id ? 'tab--active' : ''}`}
               style={{ '--c': cat.color }}
               onClick={() => handleCategory(cat.id)}
@@ -498,7 +538,12 @@ export default function App() {
         </nav>
 
         {/* Main Content */}
-        <main className="window-body" aria-label="Emoji grid">
+        <main
+          className="window-body"
+          aria-label="Emoji grid"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           {filtered.length === 0 ? (
             <div className="empty">
               <div className="empty-window">
@@ -517,7 +562,7 @@ export default function App() {
               </div>
             </div>
           ) : (
-            <div className={`grid${category === 'fresque' ? ' grid--fresque' : ''}`}>
+            <div className={`grid${category === 'fresque' ? ' grid--fresque' : ''}${swipeDir ? ` grid--swipe-${swipeDir}` : ''}`}>
               {filtered.map((item, i) => {
                 const catColor = CATEGORIES.find(c => c.id === item.category)?.color ?? '#e8c040'
                 const isFlashing = flashIdx === i

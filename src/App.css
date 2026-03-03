@@ -851,6 +851,25 @@ input {
   .grid { grid-template-columns: repeat(5, 1fr); }
 }
 
+/* ── Swipe Transition ─────────────────────────────────────────────── */
+.grid--swipe-left {
+  animation: swipe-out-left 0.18s ease-in forwards;
+}
+
+.grid--swipe-right {
+  animation: swipe-out-right 0.18s ease-in forwards;
+}
+
+@keyframes swipe-out-left {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(-40px); }
+}
+
+@keyframes swipe-out-right {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(40px); }
+}
+
 /* ── Emoji Card ───────────────────────────────────────────────────── */
 .card {
   position: relative;
