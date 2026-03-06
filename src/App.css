@@ -590,6 +590,12 @@ input {
   font-style: italic;
 }
 
+.poem-text--single {
+  font-size: 0.82rem;
+  white-space: nowrap;
+  letter-spacing: 0;
+}
+
 .poem-text--ascii {
   font-family: 'IBM Plex Mono', 'Courier New', monospace;
   font-size: 0.38rem;

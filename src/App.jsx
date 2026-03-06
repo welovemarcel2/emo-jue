@@ -46,6 +46,15 @@ async function copyToClipboard(text) {
 // ── Messages (retro mailbox) ─────────────────────────────────────────
 const MESSAGES = [
   {
+    id: 4,
+    from: 'Marcel',
+    subject: '｡ ₊°༺ Ensemble ༻°₊ ｡',
+    date: '06/03/26',
+    read: false,
+    body: `｡ ₊°༺ Hâte que nos mains et nos coeurs s'agitent ensemble ༻°₊ ｡`,
+    singleLine: true,
+  },
+  {
     id: 3,
     from: 'Marcel',
     subject: 'Marseille BB',
@@ -617,7 +626,7 @@ export default function App() {
                         {!alreadyRead && !asciiDone && <span className="poem-cursor">█</span>}
                       </pre>
                     ) : (
-                      <p className="poem-text">
+                      <p className={`poem-text${openMsg.singleLine ? ' poem-text--single' : ''}`}>
                         {alreadyRead ? openMsg.body : msgText}
                         {!alreadyRead && !msgDone && <span className="poem-cursor">█</span>}
                       </p>
