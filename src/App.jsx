@@ -46,6 +46,15 @@ async function copyToClipboard(text) {
 // ── Messages (retro mailbox) ─────────────────────────────────────────
 const MESSAGES = [
   {
+    id: 5,
+    from: 'Marcel',
+    subject: '🎂 Bon Anniversaire !',
+    date: '13/03/26',
+    read: false,
+    body: '',
+    showCake: true,
+  },
+  {
     id: 4,
     from: 'Marcel',
     subject: '｡ ₊°༺ Ensemble ༻°₊ ｡',
@@ -274,6 +283,64 @@ function AsciiHeart() {
   return (
     <div className="heart-anim" aria-hidden="true">
       <pre className="heart-frame">{heart}</pre>
+    </div>
+  )
+}
+
+// ── ASCII Birthday Cake (colorful + animated flames) ─────────────────
+const CAKE_FLAMES = [
+  [
+    ')  (  )  (  )',
+    ' (o)(o)(o)(o)(o)',
+    ' |  |  |  |  |',
+  ],
+  [
+    '(  )  (  )  (',
+    ' (o)(o)(o)(o)(o)',
+    ' |  |  |  |  |',
+  ],
+  [
+    ' ) (  ) (  )',
+    ' (o)(o)(o)(o)(o)',
+    ' |  |  |  |  |',
+  ],
+]
+
+const CAKE_ICING =
+  ' .___|__|__|__|__|___.\n' +
+  ' |~.~.~.~.~.~.~.~.~|\n' +
+  ' |.~.~.~.~.~.~.~.~.|\n'
+
+const CAKE_BODY =
+  ' |  * H A P P Y  *  |\n' +
+  ' | B I R T H D A Y! |\n'
+
+const CAKE_MID =
+  ' _|_____________________|_\n' +
+  '| o  o  o  o  o  o  o  o |\n' +
+  '|  ~  ~  ~  ~  ~  ~  ~   |\n' +
+  '|_________________________|\n'
+
+const CAKE_BASE = ''
+
+function AsciiBirthdayCake() {
+  const [tick, setTick] = useState(0)
+
+  useEffect(() => {
+    const iv = setInterval(() => setTick(t => t + 1), 380)
+    return () => clearInterval(iv)
+  }, [])
+
+  const frame = [
+    ...CAKE_FLAMES[tick % 3],
+    ...CAKE_ICING.trimEnd().split('\n'),
+    ...CAKE_BODY.trimEnd().split('\n'),
+    ...CAKE_MID.trimEnd().split('\n'),
+  ].join('\n')
+
+  return (
+    <div className="cake-anim" aria-hidden="true">
+      <pre className="cake-frame">{frame}</pre>
     </div>
   )
 }
@@ -632,6 +699,7 @@ export default function App() {
                       </p>
                     )
                   )}
+                  {(openMsg?.body ? (alreadyRead || msgDone) : true) && openMsg?.showCake && <AsciiBirthdayCake />}
                   {(openMsg?.body ? (alreadyRead || msgDone) : true) && openMsg?.showBoat && <AsciiBoat />}
                   {(openMsg?.body ? (alreadyRead || msgDone) : true) && openMsg?.showHeart && <AsciiHeart />}
                 </div>

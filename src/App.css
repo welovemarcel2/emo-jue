@@ -670,6 +670,32 @@ input {
   text-shadow: 0 0 3px rgba(240, 104, 104, 0.5);
 }
 
+/* ── ASCII Birthday Cake Animation ──────────────────────────────────── */
+.cake-anim {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1.5px dashed var(--win-border-light);
+  text-align: center;
+  animation: cake-fade-in 0.8s ease forwards;
+}
+
+@keyframes cake-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.cake-frame {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--dot-close);
+  white-space: pre;
+  letter-spacing: 0px;
+  margin: 0 auto;
+  display: inline-block;
+  text-shadow: 0 0 6px rgba(240, 168, 80, 0.4);
+}
+
 /* ── Toolbar (Search) ─────────────────────────────────────────────── */
 .toolbar {
   flex-shrink: 0;
