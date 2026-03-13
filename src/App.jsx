@@ -46,6 +46,15 @@ async function copyToClipboard(text) {
 // ── Messages (retro mailbox) ─────────────────────────────────────────
 const MESSAGES = [
   {
+    id: 5,
+    from: 'Marcel',
+    subject: '♡ Joyeux Anniversaire ♡',
+    date: '13/03/26',
+    read: false,
+    body: `Joyeux anniversaire ma Jue !\nQue cette nouvelle année te soit douce et lumineuse.`,
+    showCake: true,
+  },
+  {
     id: 4,
     from: 'Marcel',
     subject: '｡ ₊°༺ Ensemble ༻°₊ ｡',
@@ -304,6 +313,127 @@ function AsciiBoat() {
     <div className="boat-anim" aria-hidden="true">
       <div className="boat-frame">{WAVE_FRAMES[frame][0]}</div>
       <div className="boat-frame">{WAVE_FRAMES[frame][1]}</div>
+    </div>
+  )
+}
+
+// ── ASCII Birthday Cake animation (flickering candles) ──────────────
+const CAKE_FRAMES = [
+  [
+    '              )    )    )    )    )              ',
+    '               (    (    (    (    (             ',
+    '              |    |    |    |    |              ',
+    '        ┌─────┼────┼────┼────┼────┼──────┐      ',
+    '        │ ♡ ░░░░░░░░░░░░░░░░░░░░░░░░ ♡  │      ',
+    '        │ ░  JOYEUX   ANNIVERSAIRE  ░ │      ',
+    '        │ ♡ ░░░░░░░░░░░░░░░░░░░░░░░░ ♡  │      ',
+    '        ├────────────────────────────────┤      ',
+    '        │ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~  │      ',
+    '        │  ★  ✿  ★  ✿  ★  ✿  ★  ✿  ★  │      ',
+    '        │ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~  │      ',
+    '        ├────────────────────────────────┤      ',
+    '        │ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿  │      ',
+    '        │  ♡  ♡  ♡  ♡  ♡  ♡  ♡  ♡  ♡   │      ',
+    '        │ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿  │      ',
+    '        └────────────────────────────────┘      ',
+  ],
+  [
+    '             (    (    (    (    (               ',
+    '              )    )    )    )    )              ',
+    '              |    |    |    |    |              ',
+    '        ┌─────┼────┼────┼────┼────┼──────┐      ',
+    '        │ ♡ ░░░░░░░░░░░░░░░░░░░░░░░░ ♡  │      ',
+    '        │ ░  JOYEUX   ANNIVERSAIRE  ░ │      ',
+    '        │ ♡ ░░░░░░░░░░░░░░░░░░░░░░░░ ♡  │      ',
+    '        ├────────────────────────────────┤      ',
+    '        │ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~  │      ',
+    '        │  ✿  ★  ✿  ★  ✿  ★  ✿  ★  ✿  │      ',
+    '        │ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~  │      ',
+    '        ├────────────────────────────────┤      ',
+    '        │ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿  │      ',
+    '        │  ♡  ♡  ♡  ♡  ♡  ♡  ♡  ♡  ♡   │      ',
+    '        │ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿  │      ',
+    '        └────────────────────────────────┘      ',
+  ],
+  [
+    '              )    )    )    )    )              ',
+    '             (    (    (    (    (               ',
+    '              |    |    |    |    |              ',
+    '        ┌─────┼────┼────┼────┼────┼──────┐      ',
+    '        │ ♡ ░░░░░░░░░░░░░░░░░░░░░░░░ ♡  │      ',
+    '        │ ░  JOYEUX   ANNIVERSAIRE  ░ │      ',
+    '        │ ♡ ░░░░░░░░░░░░░░░░░░░░░░░░ ♡  │      ',
+    '        ├────────────────────────────────┤      ',
+    '        │ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~  │      ',
+    '        │  ★  ✿  ★  ✿  ★  ✿  ★  ✿  ★  │      ',
+    '        │ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~  │      ',
+    '        ├────────────────────────────────┤      ',
+    '        │ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿  │      ',
+    '        │  ♡  ♡  ♡  ♡  ♡  ♡  ♡  ♡  ♡   │      ',
+    '        │ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿  │      ',
+    '        └────────────────────────────────┘      ',
+  ],
+  [
+    '             (    (    (    (    (               ',
+    '               )    )    )    )    )             ',
+    '              |    |    |    |    |              ',
+    '        ┌─────┼────┼────┼────┼────┼──────┐      ',
+    '        │ ♡ ░░░░░░░░░░░░░░░░░░░░░░░░ ♡  │      ',
+    '        │ ░  JOYEUX   ANNIVERSAIRE  ░ │      ',
+    '        │ ♡ ░░░░░░░░░░░░░░░░░░░░░░░░ ♡  │      ',
+    '        ├────────────────────────────────┤      ',
+    '        │ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~  │      ',
+    '        │  ✿  ★  ✿  ★  ✿  ★  ✿  ★  ✿  │      ',
+    '        │ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~  │      ',
+    '        ├────────────────────────────────┤      ',
+    '        │ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿  │      ',
+    '        │  ♡  ♡  ♡  ♡  ♡  ♡  ♡  ♡  ♡   │      ',
+    '        │ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿ ✿  │      ',
+    '        └────────────────────────────────┘      ',
+  ],
+]
+
+function AsciiCake() {
+  const [frame, setFrame] = useState(0)
+  const totalLines = CAKE_FRAMES[0].length
+  const [revealed, setRevealed] = useState(0)
+  const [loaded, setLoaded] = useState(false)
+
+  // Phase 1: line-by-line reveal (like CRT loading)
+  useEffect(() => {
+    if (loaded) return
+    if (revealed >= totalLines) {
+      const t = setTimeout(() => setLoaded(true), 300)
+      return () => clearTimeout(t)
+    }
+    const delay = revealed === 0 ? 400 : 80 + Math.random() * 60
+    const t = setTimeout(() => setRevealed(r => r + 1), delay)
+    return () => clearTimeout(t)
+  }, [revealed, loaded, totalLines])
+
+  // Phase 2: candle flicker animation
+  useEffect(() => {
+    if (!loaded) return
+    const iv = setInterval(() => {
+      setFrame(f => (f + 1) % CAKE_FRAMES.length)
+    }, 400)
+    return () => clearInterval(iv)
+  }, [loaded])
+
+  if (!loaded) {
+    const lines = CAKE_FRAMES[0]
+    const visible = lines.slice(0, revealed)
+    const blank = Array(totalLines - revealed).fill(' '.repeat(48))
+    return (
+      <div className="cake-anim" aria-hidden="true">
+        <pre className="cake-frame cake-loading">{[...visible, ...blank].join('\n')}</pre>
+      </div>
+    )
+  }
+
+  return (
+    <div className="cake-anim" aria-hidden="true">
+      <pre className="cake-frame">{CAKE_FRAMES[frame].join('\n')}</pre>
     </div>
   )
 }
@@ -634,6 +764,7 @@ export default function App() {
                   )}
                   {(openMsg?.body ? (alreadyRead || msgDone) : true) && openMsg?.showBoat && <AsciiBoat />}
                   {(openMsg?.body ? (alreadyRead || msgDone) : true) && openMsg?.showHeart && <AsciiHeart />}
+                  {(openMsg?.body ? (alreadyRead || msgDone) : true) && openMsg?.showCake && <AsciiCake />}
                 </div>
               </div>
             )}
